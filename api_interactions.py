@@ -1,13 +1,38 @@
 import os
+import asyncio
 from typing import Dict, List, Optional
 from notion_client import Client
 from dotenv import load_dotenv
+import torch
+
+# Initialize PyTorch with CPU
+torch.set_num_threads(1)
+torch.set_num_interop_threads(1)
 
 class NotionAPI:
     def __init__(self):
         """Initialize the Notion API client."""
         load_dotenv()
         self.client = Client(auth=os.getenv("NOTION_API_KEY"))
+
+        # Ensure we're using CPU
+        if torch.cuda.is_available():
+            torch.cuda.set_device('cpu')
+
+    def _truncate_text(self, text: str, max_length: int = 2000) -> str:
+        """
+        Truncate text to fit Notion's limits.
+
+        Args:
+            text: The text to truncate
+            max_length: Maximum length allowed (default: 2000 for Notion)
+
+        Returns:
+            str: Truncated text
+        """
+        if len(text) <= max_length:
+            return text
+        return text[:max_length-3] + "..."
 
     def create_database(self, title: str, properties: Dict) -> str:
         """
@@ -43,6 +68,17 @@ class NotionAPI:
             str: The ID of the created page
         """
         try:
+            # Truncate text content if it exists
+            for prop_name, prop_value in properties.items():
+                if isinstance(prop_value, dict) and "rich_text" in prop_value:
+                    for text_block in prop_value["rich_text"]:
+                        if "text" in text_block and "content" in text_block["text"]:
+                            text_block["text"]["content"] = self._truncate_text(text_block["text"]["content"])
+                elif isinstance(prop_value, dict) and "title" in prop_value:
+                    for title_block in prop_value["title"]:
+                        if "text" in title_block and "content" in title_block["text"]:
+                            title_block["text"]["content"] = self._truncate_text(title_block["text"]["content"])
+
             response = self.client.pages.create(
                 parent={"database_id": database_id},
                 properties=properties

@@ -1,10 +1,17 @@
 from transformers import pipeline
 from typing import List, Dict
+import torch
 
 class QuestionGenerator:
     def __init__(self):
         """Initialize the question generator with a pre-trained model."""
-        self.question_generator = pipeline("text2text-generation", model="t5-base")
+        # Check if CUDA is available, otherwise use CPU
+        device = 0 if torch.cuda.is_available() else -1
+        self.question_generator = pipeline(
+            "text2text-generation",
+            model="t5-base",
+            device=device
+        )
 
     def generate_questions(self, text: str, num_questions: int = 3) -> List[Dict]:
         """
@@ -24,7 +31,7 @@ class QuestionGenerator:
                 question_prompt = f"generate question: {text}"
                 question_response = self.question_generator(
                     question_prompt,
-                    max_length=50,
+                    max_new_tokens=50,
                     num_return_sequences=1
                 )
                 question = question_response[0]['generated_text'].strip()
@@ -33,7 +40,7 @@ class QuestionGenerator:
                 answer_prompt = f"answer this question based on the text: {question} {text}"
                 answer_response = self.question_generator(
                     answer_prompt,
-                    max_length=100,
+                    max_new_tokens=100,
                     num_return_sequences=1
                 )
                 answer = answer_response[0]['generated_text'].strip()

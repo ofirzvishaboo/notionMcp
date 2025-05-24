@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 from datetime import datetime, timedelta
+from typing import Dict, List
 from api_interactions import NotionAPI
 from summaries import SummaryGenerator
 from questions import QuestionGenerator

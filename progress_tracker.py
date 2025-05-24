@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
+import os
 from api_interactions import NotionAPI
 
 class ProgressTracker:
