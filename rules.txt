@@ -1,0 +1,74 @@
+# General Rules:
+- All code must be well-commented with clear descriptions of functions and logic.
+- Code should be modular with functions that perform one specific task (e.g., summary generation, assignment creation, API interactions).
+- User inputs must be sanitized and validated (e.g., when fetching assignments or generating questions).
+- The assistant should be capable of handling asynchronous tasks, particularly for API calls to Notion and content generation.
+- Use Python 3.9+ and libraries like `requests`, `notion-client`, `transformers`, `schedule`, and `flask` or `streamlit` for the web interface.
+- Ensure that summaries are concise, with a word count limit (e.g., max 200 words).
+- The assistant should use a confirmation mechanism for summaries before storing them in Notion.
+
+# Structure:
+- Use a modular approach, organizing the project into separate files and directories:
+  - **api_interactions.py**: Handles all interactions with Notion’s API.
+  - **summaries.py**: Handles the generation of summaries from content.
+  - **questions.py**: Generates questions based on summaries or content.
+  - **progress_tracker.py**: Manages progress tracking, including completed tasks and feedback.
+  - **assistant.py**: Main driver to coordinate user input, responses, and interactions.
+
+# API Interactions (Notion):
+- **Notion API integration**: Ensure that the assistant can read, create, and update content in Notion databases for assignments, summaries, and tasks.
+  - Use Notion’s API to create weekly task databases and calendars.
+  - When creating tasks, automatically set reminders for deadlines.
+  - Track the user's progress in Notion (e.g., task completion, reviews).
+
+# User Interaction:
+- The assistant should accept **text input** from the user, allowing them to:
+  - Ask specific questions about the content they are learning.
+  - Request summaries of learning materials.
+  - Review or confirm summaries before they are saved.
+  - Receive reminders about upcoming assignments or deadlines.
+- The assistant must **confirm** summaries with the user before storing them in Notion.
+  - Use a simple prompt: “Do you confirm this summary as accurate? [Yes/No]”
+  - If the user replies "No", ask for further clarification or modifications.
+
+# Summary Generation:
+- Generate concise summaries based on the provided learning content.
+  - Use the `transformers` library or a similar NLP model for summarization (e.g., GPT, T5).
+  - Summarize each week's learning materials in no more than 200 words.
+  - The summary should be relevant to the topic, capturing the main points.
+- After generating a summary, ask for confirmation: “Would you like to confirm this summary?”
+
+# Question Generation:
+- After generating a summary, generate review questions for the user based on the content.
+  - Use the `transformers` library (e.g., `question-generation` models) to create questions from the summary.
+  - Provide a set of 3-5 questions related to the summary.
+- Ensure that the questions are relevant and based on the content the user wants to review.
+
+# Progress Tracking:
+- Track the user's progress based on completed tasks (e.g., assignments, questions reviewed, summaries approved).
+  - Store user progress in Notion by updating the progress fields in the relevant databases.
+- The assistant must dynamically adapt based on user performance.
+  - If the user has completed tasks quickly and correctly, increase the difficulty of future tasks (e.g., more complex questions, harder summaries).
+  - If the user struggles, provide additional learning resources or simpler tasks to review.
+
+# Assignments and Calendar Integration (Notion):
+- The assistant must create assignments in Notion, including:
+  - **Task Name**: Name of the assignment (e.g., “Week 1 Review Questions”).
+  - **Due Date**: The deadline for the assignment.
+  - **Progress**: A percentage indicating completion.
+- Assignments should be organized by weeks and marked with appropriate tags for easy retrieval.
+- Add calendar events for each assignment, allowing reminders for upcoming tasks.
+
+# Adaptation to User Feedback:
+- The assistant should incorporate feedback to adjust future learning materials.
+  - If the user requests additional explanation, provide resources (e.g., articles, videos).
+  - If the user skips tasks or marks them incomplete, suggest revisiting previous weeks’ content before proceeding.
+- Always ask for feedback after completing each week’s summary and questions:
+  - “How did you feel about this week’s learning? Any areas you need more help with?”
+- Update Notion with feedback and adjust the upcoming tasks based on the user's needs.
+
+# Testing and Debugging:
+- Ensure the system is capable of handling unexpected user inputs (e.g., invalid responses or missing data).
+- Implement unit tests for key functions (e.g., summary generation, question generation, progress tracking).
+  - Use **pytest** or **unittest** for testing.
+- Test Notion API interactions for creating, updating, and retrieving data.
